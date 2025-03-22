@@ -19,12 +19,19 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
+# Configurar Apache para usar el directorio public de Laravel
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
 # Set working directory
 WORKDIR /var/www/html
 
 # Copy existing application directory
 COPY . /var/www/html
 
-# Set permissions
+# Configurar permisos correctamente
 RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage
+    && chmod -R 755 /var/www/html \
+    && chmod -R 777 /var/www/html/storage \
+    && chmod -R 777 /var/www/html/bootstrap/cache
